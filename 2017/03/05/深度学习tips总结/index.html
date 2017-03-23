@@ -3,18 +3,30 @@
 <head>
   <meta charset="utf-8">
   
-  <title>Hello World | bicelove</title>
+  <title>深度学习tips总结 | bicelove</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="Welcome to Hexo! This is your very first post. Check documentation for more info. If you get any pr/Users/bice/Documents/blog/source/_posts/newtest.mdoblems when using Hexo, you can find the answe/Use">
+  <meta name="description" content="注：本文是在阅读新智元的文章后总结，文中不少语句参考了原文作者，请知晓。
+1、shuffle在框架允许的前提下，每个epoch要shuffle一次;
+2、扩展数据集小数据集容易使得模型过拟合，但过分扩展会使得大都相同的数据，需采取一定的方法，避免出现相同的样本（尝试中）；
+3、在非常小的子数据集上训练进行过拟合，再在整个数据集上训练以确定网络可以收敛；
+4、始终是用dropout将过拟合的几率最小">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Hello World">
+<meta property="og:title" content="深度学习tips总结">
 <meta property="og:url" content="http://bicelove.com/2017/03/05/深度学习tips总结/index.html">
 <meta property="og:site_name" content="bicelove">
-<meta property="og:description" content="Welcome to Hexo! This is your very first post. Check documentation for more info. If you get any pr/Users/bice/Documents/blog/source/_posts/newtest.mdoblems when using Hexo, you can find the answe/Use">
-<meta property="og:updated_time" content="2017-03-22T14:37:25.000Z">
+<meta property="og:description" content="注：本文是在阅读新智元的文章后总结，文中不少语句参考了原文作者，请知晓。
+1、shuffle在框架允许的前提下，每个epoch要shuffle一次;
+2、扩展数据集小数据集容易使得模型过拟合，但过分扩展会使得大都相同的数据，需采取一定的方法，避免出现相同的样本（尝试中）；
+3、在非常小的子数据集上训练进行过拟合，再在整个数据集上训练以确定网络可以收敛；
+4、始终是用dropout将过拟合的几率最小">
+<meta property="og:updated_time" content="2017-03-22T15:04:04.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Hello World">
-<meta name="twitter:description" content="Welcome to Hexo! This is your very first post. Check documentation for more info. If you get any pr/Users/bice/Documents/blog/source/_posts/newtest.mdoblems when using Hexo, you can find the answe/Use">
+<meta name="twitter:title" content="深度学习tips总结">
+<meta name="twitter:description" content="注：本文是在阅读新智元的文章后总结，文中不少语句参考了原文作者，请知晓。
+1、shuffle在框架允许的前提下，每个epoch要shuffle一次;
+2、扩展数据集小数据集容易使得模型过拟合，但过分扩展会使得大都相同的数据，需采取一定的方法，避免出现相同的样本（尝试中）；
+3、在非常小的子数据集上训练进行过拟合，再在整个数据集上训练以确定网络可以收敛；
+4、始终是用dropout将过拟合的几率最小">
   
     <link rel="alternative" href="/atom.xml" title="bicelove" type="application/atom+xml">
   
@@ -38,7 +50,7 @@
         
   
     <h1 class="article-title" itemprop="name">
-      Hello World
+      深度学习tips总结
     </h1>
   
 
@@ -52,15 +64,21 @@
     </div>
     <div class="article-entry" itemprop="articleBody">
       
-        <p>Welcome to <a href="https://hexo.io/" target="_blank" rel="external">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/" target="_blank" rel="external">documentation</a> for more info. If you get any pr/Users/bice/Documents/blog/source/_posts/newtest.mdoblems when using Hexo, you can find the answe/Users/bice/Documents/blog/source/_posts/newtest.mdr in <a href="https://hexo.io/docs/troubleshooting.html" target="_blank" rel="external">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues" target="_blank" rel="external">GitHub</a>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ hexo new <span class="string">"My New Post"</span></div></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/writing.html" target="_blank" rel="external">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ hexo server</div></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/server.html" target="_blank" rel="external">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ hexo generate</div></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/generating.html" target="_blank" rel="external">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ hexo deploy</div></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/deployment.html" target="_blank" rel="external">Deployment</a></p>
+        <p>注：本文是在阅读新智元的文章后总结，文中不少语句参考了原文作者，请知晓。</p>
+<h3 id="1、shuffle"><a href="#1、shuffle" class="headerlink" title="1、shuffle"></a>1、shuffle</h3><p>在框架允许的前提下，每个epoch要shuffle一次;</p>
+<h3 id="2、扩展数据集"><a href="#2、扩展数据集" class="headerlink" title="2、扩展数据集"></a>2、扩展数据集</h3><p>小数据集容易使得模型过拟合，但过分扩展会使得大都相同的数据，需采取一定的方法，避免出现相同的样本（尝试中）；</p>
+<h3 id="3、在非常小的子数据集上训练进行过拟合，再在整个数据集上训练"><a href="#3、在非常小的子数据集上训练进行过拟合，再在整个数据集上训练" class="headerlink" title="3、在非常小的子数据集上训练进行过拟合，再在整个数据集上训练"></a>3、在非常小的子数据集上训练进行过拟合，再在整个数据集上训练</h3><p>以确定网络可以收敛；</p>
+<h3 id="4、始终是用dropout将过拟合的几率最小化"><a href="#4、始终是用dropout将过拟合的几率最小化" class="headerlink" title="4、始终是用dropout将过拟合的几率最小化"></a>4、始终是用dropout将过拟合的几率最小化</h3><p>当神经元节点超过256时，就要使用dropout，Dropout as a Bayesian Approximation: Representing Model Uncertainty in Deep Learning [Gal Yarin &amp; Zoubin Ghahramani，2015].；</p>
+<h3 id="5、MAX-pooling会更快，避免使用LRN-pooling"><a href="#5、MAX-pooling会更快，避免使用LRN-pooling" class="headerlink" title="5、MAX pooling会更快，避免使用LRN pooling"></a>5、MAX pooling会更快，避免使用LRN pooling</h3><h3 id="避免使用sigmoid-tanh"><a href="#避免使用sigmoid-tanh" class="headerlink" title="避免使用sigmoid/tanh"></a>避免使用sigmoid/tanh</h3><p>代价昂贵，容易饱和，网络越深，越容易停止反向传播；而更简单有效的ReLU和PreLU能够促进稀疏性，其反向传播也更加鲁棒，Deep Sparse Rectifier Neural Networks；</p>
+<h3 id="7、在max-pooling之前不要使用ReLU和PreLU，在保持计算之后再使用"><a href="#7、在max-pooling之前不要使用ReLU和PreLU，在保持计算之后再使用" class="headerlink" title="7、在max pooling之前不要使用ReLU和PreLU，在保持计算之后再使用"></a>7、在max pooling之前不要使用ReLU和PreLU，在保持计算之后再使用</h3><h3 id="8、不要使用ReLU"><a href="#8、不要使用ReLU" class="headerlink" title="8、不要使用ReLU"></a>8、不要使用ReLU</h3><p>虽然它们是很好的非线性函数，但是在微调模型时会阻碍反向传播，在初始化阶段被卡住，无法得到任何微调效果；可以使用PreLU以及一个很小的乘数（通常是0.1），收敛更快；</p>
+<h3 id="9、经常使用批标准化-Batch-Normalization"><a href="#9、经常使用批标准化-Batch-Normalization" class="headerlink" title="9、经常使用批标准化(Batch Normalization)"></a>9、经常使用批标准化(Batch Normalization)</h3><p>可以允许更快的收敛以及更小的数据集，节省时间以及资源，Batch Normalization: Accelerating Deep Network Training by Reducing Internal Covariate Shift [Sergey Ioffe &amp; Christian Szegedy,2015]。；</p>
+<h3 id="10、相对于减去平均值，更倾向于将数据压缩到-1-1"><a href="#10、相对于减去平均值，更倾向于将数据压缩到-1-1" class="headerlink" title="10、相对于减去平均值，更倾向于将数据压缩到[-1, +1]"></a>10、相对于减去平均值，更倾向于将数据压缩到[-1, +1]</h3><p>针对训练和部署的技巧，而非提升性能；</p>
+<h3 id="11、小型化模型，并尝试-ensemble"><a href="#11、小型化模型，并尝试-ensemble" class="headerlink" title="11、小型化模型，并尝试 ensemble"></a>11、小型化模型，并尝试 ensemble</h3><p>以方便用户及服务，并提升准确度；</p>
+<h3 id="12、尽可能使用-xavier-初始化"><a href="#12、尽可能使用-xavier-初始化" class="headerlink" title="12、尽可能使用 xavier 初始化"></a>12、尽可能使用 xavier 初始化</h3><p>可在较大的全连接层上使用，避免在CNN层使用，An Explanation of Xavier Initialization（by Andy Jones）；</p>
+<h3 id="13、如果输入数据有空间参数，可以尝试端到端CNN"><a href="#13、如果输入数据有空间参数，可以尝试端到端CNN" class="headerlink" title="13、如果输入数据有空间参数，可以尝试端到端CNN"></a>13、如果输入数据有空间参数，可以尝试端到端CNN</h3><p>SqueezeNet: AlexNet-level accuracy with 50x fewer parameters and &lt;0.5MB model size [Forrest N. Iandola et. al. 2016];</p>
+<h3 id="14、修改模型，只要可能就使用-1x1-的-CNN-层，它的位置对提高性能很有帮助。"><a href="#14、修改模型，只要可能就使用-1x1-的-CNN-层，它的位置对提高性能很有帮助。" class="headerlink" title="14、修改模型，只要可能就使用 1x1 的 CNN 层，它的位置对提高性能很有帮助。"></a>14、修改模型，只要可能就使用 1x1 的 CNN 层，它的位置对提高性能很有帮助。</h3><h3 id="15、假如你要利用模型或你自己的层来制作模板，记得把所有东西参数化，否则你得重建所有二进制文件"><a href="#15、假如你要利用模型或你自己的层来制作模板，记得把所有东西参数化，否则你得重建所有二进制文件" class="headerlink" title="15、假如你要利用模型或你自己的层来制作模板，记得把所有东西参数化，否则你得重建所有二进制文件"></a>15、假如你要利用模型或你自己的层来制作模板，记得把所有东西参数化，否则你得重建所有二进制文件</h3><h3 id="16、了解正在着手的任务及使用的结构，莫要盲目地复制模型；"><a href="#16、了解正在着手的任务及使用的结构，莫要盲目地复制模型；" class="headerlink" title="16、了解正在着手的任务及使用的结构，莫要盲目地复制模型；"></a>16、了解正在着手的任务及使用的结构，莫要盲目地复制模型；</h3><h4 id="参考资料："><a href="#参考资料：" class="headerlink" title="参考资料："></a>参考资料：</h4><p>1、 Ian Goodfellow , Yoshua Bengio 和 Aaron Courville 合著的经典教材《深度学习》（数学理论丰富）</p>
+<p>2、邓力和俞栋合著的《深度学习：方法及应用》（关于历史与介绍）</p>
+<p>3、Timothy Masters 写的 Deep Belief Nets in C++ and CUDA C, Vol. 1: Restricted Boltzmann Machines and Supervised Feedforward Networks（实现算法）</p>
 
       
 
@@ -76,7 +94,7 @@
       <strong class="article-nav-caption">Newer</strong>
       <div class="article-nav-title">
         
-          深度学习tips总结
+          Hello World
         
       </div>
     </a>
