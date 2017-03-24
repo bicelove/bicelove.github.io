@@ -13,7 +13,7 @@ fine-tune on flowers datasets arguments in Tensorflow  –max_number_of_steps=10
 <meta property="og:site_name" content="bicelove">
 <meta property="og:description" content="GPU信息:GeForce GTX 1080  (8G)本地服务器配置了4块相同的显卡，Tensorflow和Caffe任务分别跑在两块GPU上。
 fine-tune on flowers datasets arguments in Tensorflow  –max_number_of_steps=100000 \  –batch_size=32 \  –learning_rate=0.01 \">
-<meta property="og:updated_time" content="2017-03-24T14:50:55.000Z">
+<meta property="og:updated_time" content="2017-03-24T15:02:23.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="inception_v2性能对比">
 <meta name="twitter:description" content="GPU信息:GeForce GTX 1080  (8G)本地服务器配置了4块相同的显卡，Tensorflow和Caffe任务分别跑在两块GPU上。
@@ -74,6 +74,7 @@ I tensorflow/core/kernels/logging_ops.cc:79] <span class="built_in">eval</span>/
 <li>GPU memory：6047M</li>
 <li>speed：0.58 sec/step</li>
 </ul>
+<p>这里还有个坑，每个tensorflow的py脚本运行时，都会自动识别闲置显卡并最大程度利用起来，于是乎每次忘了设置显卡可见性后就会被咖啡同学炮轰我占了他的显卡，阿西巴。。。</p>
 <h5 id="尚未在tensorflow上调试通过-fine-tune-on-cloth-datasets-…"><a href="#尚未在tensorflow上调试通过-fine-tune-on-cloth-datasets-…" class="headerlink" title="尚未在tensorflow上调试通过 fine-tune on cloth datasets …"></a>尚未在tensorflow上调试通过 fine-tune on cloth datasets …</h5>
       
 
