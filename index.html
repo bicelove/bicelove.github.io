@@ -28,6 +28,161 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-Tensorflow queue" class="article article-type-post" itemscope itemprop="blogPost">
+  
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2017/03/24/Tensorflow queue/">Tensorflow Queue</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-meta">
+      <a href="/2017/03/24/Tensorflow queue/" class="article-date">
+  <time datetime="2017-03-24T14:39:00.000Z" itemprop="datePublished">2017-03-24</time>
+</a>
+      
+    </div>
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>队列是TensorFlow图中的一种有状态的节点，像变量一样可以被其他节点修改。具体来说，其他节点可以把新元素插入到队列后端(rear)，也可以把队列前端(front)的元素删除。</p>
+<p>QueueRunners：<br>文件名队列是怎么得来的呢？起初这个队列是空的，QueueRunners本质上就是一个线程thread，负责使用会话session并不断地调用enqueue操作。Tensorflow把这个模式封装在tf.train.QueueRunner对象里面。入队列操作99%的时间都可以被忽略掉，因为这个操作是由后台负责运行。</p>
+<p>RandomShuffleQueue(A queue implementation that dequeues elements in a random order)：<br>一个典型的输入结构是使用一个RandomShuffleQueue作为模型训练的输入，多个线程准备训练样本，并且把这些样本压入队列，一个训练线程执行一个训练操作，此操作会从队列中移除一个mini-batche，Session对象支持多线程并行操作。</p>
+<p>但是，所有线程都必须能被同步终止，异常必须能被正确捕获并报告，会话终止的时候， 队列必须能被正确地关闭。所以TensorFlow提供了两个类来帮助多线程的实现：tf.Coordinator和 tf.QueueRunner，从设计上两个类必须被一起使用。</p>
+<ul>
+<li>Coordinator类用来同时停止多个工作线程并且向那个在等待所有工作线程终止的程序报告异常。</li>
+<li>QueueRunner类用来协调多个工作线程同时将多个tensor压入同一个队列中。</li>
+</ul>
+<h4 id="读二进制文件数据到队列中"><a href="#读二进制文件数据到队列中" class="headerlink" title="读二进制文件数据到队列中"></a>读二进制文件数据到队列中</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div></pre></td><td class="code"><pre><div class="line">import tensorflow as tf</div><div class="line"> </div><div class="line">def read_and_decode_single_example(filename_queue):	<span class="comment">#输入参数：a queue for an input pipeline</span></div><div class="line">    class Image(self):					<span class="comment"># 定义一个空的类对象，类似于c语言里面的结构体定义</span></div><div class="line">    pass						<span class="comment"># pass是空语句，不做任何事情，为了保持程序结构的完整性,一般用做占位语句。</span></div><div class="line">    image = Image()</div><div class="line">    image.height = 32</div><div class="line">    image.width = 32</div><div class="line">    image.depth = 3</div><div class="line">    label_bytes = 1</div><div class="line">     </div><div class="line">    <span class="comment"># compute record bytes</span></div><div class="line">    Bytes_to_read = label_bytes + image.heigth * image.width * 3</div><div class="line">    <span class="comment"># A Reader that outputs fixed-length records from a file</span></div><div class="line">    reader = tf.FixedLengthRecordReader(record_bytes=Bytes_to_read) </div><div class="line">    <span class="comment"># Returns the next record (key, value) pair produced by a reader, key 和value都是字符串类型的tensor</span></div><div class="line">    <span class="comment"># Will dequeue a work unit from queue if necessary (e.g. when the</span></div><div class="line">    <span class="comment"># Reader needs to start reading from a new file since it has</span></div><div class="line">    <span class="comment"># finished with the previous file).</span></div><div class="line">    image.key, value_str = reader.read(filename_queue) </div><div class="line">    <span class="comment"># Reinterpret the bytes of a string as a vector of numbers,每一个数值占用一个字节,在[0, 255]区间内，因此out_type要取uint8类型</span></div><div class="line">    value = tf.decode_raw(bytes=value_str, out_type=tf.uint8) </div><div class="line">    <span class="comment"># Extracts a slice from a tensor， value中包含了label和feature，故要对向量类型tensor进行'parse'操作</span></div><div class="line">    image.label = tf.slice(input_=value, begin=[0], size=[1])</div><div class="line">    value = value.slice(input_=value, begin=[1], size=[-1]).reshape((image.depth, image.height, image.width))</div><div class="line">    transposed_value = tf.transpose(value, perm=[2, 0, 1]) </div><div class="line">    image.mat = transposed_value </div><div class="line">    <span class="built_in">return</span> image</div></pre></td></tr></table></figure>
+<h5 id="函数调用"><a href="#函数调用" class="headerlink" title="函数调用"></a>函数调用</h5><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line">filenames =[os.path.join(data_dir, <span class="string">'test_batch.bin'</span>)]		<span class="comment">#拼接路径,可以根据系统自动选择正确的路径分隔符"/"或"\"</span></div><div class="line"><span class="comment"># Output strings (e.g. filenames) to a queue for an input pipeline</span></div><div class="line">filename_queue = tf.train.string_input_producer(string_tensor=filenames) 	<span class="comment">#将filenames转为queue</span></div><div class="line"><span class="comment"># returns symbolic label and image</span></div><div class="line">img_obj = read_and_decode_single_example(<span class="string">"filename_queue"</span>)</div><div class="line">Label = img_obj.label</div><div class="line">Image = img_obj.mat</div><div class="line">sess = tf.Session()</div><div class="line"><span class="comment"># 初始化tensorflow图中的所有状态，如待读取的下一个记录tfrecord的位置，variables等</span></div><div class="line">init = tf.initialize_all_variables()</div><div class="line">sess.run(init)</div><div class="line">tf.train.start_queue_runners(sess=sess)</div><div class="line"><span class="comment"># grab examples back.</span></div><div class="line"><span class="comment"># first example from file</span></div><div class="line">label_val_1, image_val_1 = sess.run([label, image])</div><div class="line"><span class="comment"># second example from file</span></div><div class="line">label_val_2, image_val_2 = sess.run([label, image])</div></pre></td></tr></table></figure>
+<p>tf.train.string_input_producer：<br>创建一个QueueRunners线程，添加QueueRunner到数据流图中。</p>
+<p>tf.train.start_queue_runners(sess=sess)：<br>在运行任何训练步骤之前，要告知tensorflow去启动这些线程，否则这些队列会因为等待数据入队而被堵塞，导致数据流图将一直处于挂起状态。可以调用tf.train.start_queue_runners(sess=sess)来启动所有的QueueRunners。<br>这个调用并不是符号化的操作，它会启动输入管道的线程，填充样本到队列中，以便出队操作可以从队列中拿到样本。<br>另外，必须要先运行初始化操作再创建这些线程。如果这些队列未被初始化，tensorflow会抛出错误。</p>
+<h4 id="从二进制文件中读取mini-batchs"><a href="#从二进制文件中读取mini-batchs" class="headerlink" title="从二进制文件中读取mini-batchs"></a>从二进制文件中读取mini-batchs</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># 从队列中随机筛选多个样例返回给image_batch和label_batch）</span></div><div class="line">image_batch, label_batch = tf.train.shuffle_batch(tensor_list=[image, label]], </div><div class="line">                                                  batch_size=batch_size, </div><div class="line">                                                  num_threads=24, </div><div class="line">                                                  min_after_dequeue=min_samples_in_queue,</div><div class="line">                                                  capacity=min_samples_in_queue+3*batch_size)</div></pre></td></tr></table></figure>
+<p>读取batch数据需要使用新的队列queues和QueueRunners（大致流程图如下）。</p>
+<p>Shuffle_batch:<br>构建一个RandomShuffleQueue，并不断地把单个的（image，labels）对送入队列中，入队操作是通过QueueRunners启动另外的线程来完成的。<br>这个RandomShuffleQueue会顺序地压样例到队列中，直到队列中的样例个数达到了batch_size+min_after_dequeue个。然后从队列中选择batch_size个随机的元素进行返回。<br>事实上，shuffle_batch返回的值就是RandomShuffleQueue.dequeue_many()的结果。有了这个batches变量，就可以开始训练机器学习模型了。</p>
+<h5 id="tf-train-shuffle-batch-tensor-list-batch-size-capacity-min-after-dequeue-num-threads-1-seed-None-enqueue-many-False-shapes-None-shared-name-None-name-None-参数说明："><a href="#tf-train-shuffle-batch-tensor-list-batch-size-capacity-min-after-dequeue-num-threads-1-seed-None-enqueue-many-False-shapes-None-shared-name-None-name-None-参数说明：" class="headerlink" title="tf.train.shuffle_batch(tensor_list, batch_size, capacity, min_after_dequeue, num_threads=1, seed=None, enqueue_many=False, shapes=None, shared_name=None, name=None)参数说明："></a>tf.train.shuffle_batch(tensor_list, batch_size, capacity, min_after_dequeue, num_threads=1, seed=None, enqueue_many=False, shapes=None, shared_name=None, name=None)参数说明：</h5><p>tensor_list： 待入队的tensor list；<br>batch_size：训练时用batch_size；<br>capacity：队列长度，整型；<br>min_after_dequeue：随机取样的样本总体最小值，用于保证所取mini-batch的随机性；<br>num_threads：session会话支持多线程，这里可以设置多线程加速样本的读取）<br>seed: Seed for the random shuffling within the queue.<br>enqueue_many：为False时表示tensor_list是一个样例，压入时占用队列中的一个元素；为True时表示tensor_list中的每一个元素都是一个样例，压入时占用队列中的一个元素位置，可以看作为一个batch；<br>shapes: (Optional) The shapes for each example. Defaults to the inferred shapes for <code>tensor_list</code>.<br>shared_name: (Optional) If set, this queue will be shared under the given name across multiple sessions.<br>name: (Optional) A name for the operations.</p>
+<h5 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h5><p><a href="http://blog.csdn.net/diligent_321/article/details/53008840" target="_blank" rel="external"> TensorFlow读取二进制文件数据到队列</a></p>
+
+      
+
+      
+        
+    </div>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-Tensorflow vs Caffe" class="article article-type-post" itemscope itemprop="blogPost">
+  
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2017/03/24/Tensorflow vs Caffe/">inception_v2性能对比</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-meta">
+      <a href="/2017/03/24/Tensorflow vs Caffe/" class="article-date">
+  <time datetime="2017-03-24T14:39:00.000Z" itemprop="datePublished">2017-03-24</time>
+</a>
+      
+    </div>
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h4 id="fine-tune-on-flowers-datasets-arguments-in-Tensorflow"><a href="#fine-tune-on-flowers-datasets-arguments-in-Tensorflow" class="headerlink" title="fine-tune on flowers datasets arguments in Tensorflow"></a>fine-tune on flowers datasets arguments in Tensorflow</h4><p>  –max_number_of_steps=100000 \<br>  –batch_size=32 \<br>  –learning_rate=0.01 \<br>  –learning_rate_decay_type=fixed \<br>  –save_interval_secs=60 \<br>  –save_summaries_secs=60 \<br>  –log_every_n_steps=100 \<br>  –optimizer=rmsprop \<br>  –weight_decay=0.00004</p>
+<p>测试结果：</p>
+<ul>
+<li>GPU memory：7829M</li>
+<li>speed： 0.09 sec/step    </li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># Fine-tune only the new layers for 91600 steps</span></div><div class="line">...</div><div class="line">INFO:tensorflow:global step 91000: loss = 0.3561 (0.09 sec/step)</div><div class="line">INFO:tensorflow:global step 91100: loss = 0.3328 (0.10 sec/step)</div><div class="line">INFO:tensorflow:global step 91200: loss = 0.5208 (0.10 sec/step)</div><div class="line">INFO:tensorflow:global step 91300: loss = 0.4623 (0.09 sec/step)</div><div class="line">INFO:tensorflow:global step 91400: loss = 0.9602 (0.10 sec/step)</div><div class="line">INFO:tensorflow:global step 91500: loss = 0.8571 (0.10 sec/step)</div><div class="line">INFO:tensorflow:global step 91600: loss = 0.6486 (0.10 sec/step)</div><div class="line">...</div></pre></td></tr></table></figure>
+<pre><code class="bash"><span class="comment"># evaluation</span>
+...
+I tensorflow/core/kernels/logging_ops.cc:79] <span class="built_in">eval</span>/Accuracy[0.8875]
+I tensorflow/core/kernels/logging_ops.cc:79] <span class="built_in">eval</span>/Recall_5[1]
+</code></pre>
+<h4 id="fine-tune-on-cloth-datasets-arguments-in-Caffe"><a href="#fine-tune-on-cloth-datasets-arguments-in-Caffe" class="headerlink" title="fine-tune on cloth datasets arguments in Caffe"></a>fine-tune on cloth datasets arguments in Caffe</h4><p>display: 100<br>average_loss: 40<br>base_lr: 0.01<br>lr_policy: “step”<br>stepsize: 200000<br>gamma: 0.1<br>max_iter:1000000<br>momentum: 0.9<br>weight_decay: 0.00004<br>snapshot: 1000</p>
+<p>测试结果：</p>
+<ul>
+<li>GPU memory：6047M</li>
+<li>speed：0.58 sec/step</li>
+</ul>
+<h5 id="尚未在tensorflow上调试通过-fine-tune-on-cloth-datasets-…"><a href="#尚未在tensorflow上调试通过-fine-tune-on-cloth-datasets-…" class="headerlink" title="尚未在tensorflow上调试通过 fine-tune on cloth datasets …"></a>尚未在tensorflow上调试通过 fine-tune on cloth datasets …</h5>
+      
+
+      
+        
+    </div>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-Tensorflow TFRecord" class="article article-type-post" itemscope itemprop="blogPost">
+  
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2017/03/24/Tensorflow TFRecord/">Tensorflow Queue</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-meta">
+      <a href="/2017/03/24/Tensorflow TFRecord/" class="article-date">
+  <time datetime="2017-03-24T14:38:22.000Z" itemprop="datePublished">2017-03-24</time>
+</a>
+      
+    </div>
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>TensorFlow有它自己的二进制格式，使用a mixture of its Records 格式和protobuf。<br>Protobuf是一种序列化数据结构的方式，给出了关于数据的一些描述。<br>TFRecords是tensorflow的默认数据格式，一个record就是一个包含了序列化tf.train.Example 协议缓存对象的二进制文件，可以使用python创建这种格式，然后便可以使用tensorflow提供的函数来输入给机器学习模型。</p>
+<h3 id="Tensorflow支持多种样例输入的方式"><a href="#Tensorflow支持多种样例输入的方式" class="headerlink" title="Tensorflow支持多种样例输入的方式"></a>Tensorflow支持多种样例输入的方式</h3><ul>
+<li>placeholder：较易使用，但这需要手动传递numpy.array类型的数据。</li>
+<li>队列机制：使用二进制文件和输入队列的组合形式进行异步计算。<br>这种方式不仅可以节省代码量，避免data augmentation和读文件操作，处理不同类型的数据， 而且也不再需要人为地划分开“预处理”和“模型计算”。</li>
+</ul>
+<h4 id="生成TFRecord"><a href="#生成TFRecord" class="headerlink" title="生成TFRecord"></a>生成TFRecord</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div></pre></td><td class="code"><pre><div class="line">import os</div><div class="line">import tensorflow as tf </div><div class="line">from PIL import Image</div><div class="line">import sys</div><div class="line"></div><div class="line"><span class="comment"># 参数1：各分类图片所在目录</span></div><div class="line">imgPath = sys.argv[1]				</div><div class="line">classes = os.listdir(imgPath)					<span class="comment">#各分类图片所在目录存储在classes</span></div><div class="line"><span class="comment"># </span></div><div class="line">init_op = tf.global_variables_initializer()</div><div class="line">sess = tf.Session()</div><div class="line">sess.run(init_op)</div><div class="line"><span class="comment"># 参数2：保存TFRecord文件目录</span></div><div class="line">svPath = sys.argv[2]				</div><div class="line">writer = tf.python_io.TFRecordWriter(svPath)	<span class="comment">#tf.python_io.TFRecordWriter进行写入</span></div><div class="line"><span class="comment"># enumerate既遍历索引又遍历元素，index存储索引，下面会记录为图片的label， name存储元素</span></div><div class="line"><span class="keyword">for</span> index, name <span class="keyword">in</span> enumerate(classes):		</div><div class="line">    class_path = imgPath + name + <span class="string">"/"</span></div><div class="line">    <span class="comment"># os.listdir()函数获得指定目录中的内容， img_name列举每张图片名称</span></div><div class="line">    <span class="keyword">for</span> img_name <span class="keyword">in</span> os.listdir(class_path):	</div><div class="line">	    img_path = class_path + img_name		<span class="comment">#img_path存储每张图片的“绝对”路径</span></div><div class="line">        img = Image.open(img_path)</div><div class="line">        img = img.resize((224, 224))</div><div class="line">		<span class="comment">#img.save("tempResize.jpg")				#存储图片进行检验</span></div><div class="line">	    img_raw = img.tobytes()          		<span class="comment">#将图片转化为原生bytes</span></div><div class="line">		<span class="comment">#使用tf.train.Example来定义填入的数据格式</span></div><div class="line">        example = tf.train.Example(features=tf.train.Features(feature=&#123;</div><div class="line">            <span class="string">"label"</span>: tf.train.Feature(int64_list=tf.train.Int64List(value=[index])),</div><div class="line">            <span class="string">'img_raw'</span>: tf.train.Feature(bytes_list=tf.train.BytesList(value=[img_raw]))</div><div class="line">       &#125;))</div><div class="line">        writer.write(example.SerializeToString())  <span class="comment">#序列化为字符串</span></div><div class="line">writer.close()</div></pre></td></tr></table></figure>
+<p>一个Example中包含Features，Features里包含Feature（没有s）的字典，Feature里包含有一个 FloatList， 或者ByteList，或者Int64List。</p>
+<h4 id="读取TFRecord"><a href="#读取TFRecord" class="headerlink" title="读取TFRecord"></a>读取TFRecord</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># 此处各变量沿用上述定义</span></div><div class="line"><span class="keyword">for</span> serialized_example <span class="keyword">in</span> tf.python_io.tf_record_iterator(svPath):</div><div class="line">    example = tf.train.Example()</div><div class="line">    example.ParseFromString(serialized_example)		<span class="comment">#解析字符串</span></div><div class="line">	image = example.features.feature[<span class="string">'image'</span>].bytes_list.value</div><div class="line">    label = example.features.feature[<span class="string">'label'</span>].int64_list.value</div><div class="line">    <span class="comment"># </span></div><div class="line">    <span class="built_in">print</span> image, label</div></pre></td></tr></table></figure>
+<h4 id="使用队列（queue）读取TFRecord"><a href="#使用队列（queue）读取TFRecord" class="headerlink" title="使用队列（queue）读取TFRecord"></a>使用队列（queue）读取TFRecord</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line">def read_and_decode(filename):</div><div class="line">    <span class="comment">#根据文件名生成一个队列,即将filenames（即为上述生成的tfrecord文件）转为queue</span></div><div class="line">    filename_queue = tf.train.string_input_producer([filename])		</div><div class="line">    reader = tf.TFRecordReader()</div><div class="line">    _, serialized_example = reader.read(filename_queue)</div><div class="line">    <span class="comment"># parse_single_example解释器从TFRecords文件中读取数据，将Example协议内存块(protocol buffer)解析为张量。</span></div><div class="line">    features = tf.parse_single_example(serialized_example,</div><div class="line">                                       features=&#123;</div><div class="line">                                           <span class="string">'label'</span>: tf.FixedLenFeature([], tf.int64),</div><div class="line">                                           <span class="string">'img_raw'</span> : tf.FixedLenFeature([], tf.string),</div><div class="line">                                       &#125;)</div><div class="line">    img = tf.decode_raw(features[<span class="string">'img_raw'</span>], tf.uint8)			<span class="comment">#解析img_raw，并将其转换为uint8向量</span></div><div class="line">	img = tf.reshape(img, [224, 224, 3])						<span class="comment">#reshape，将tensor转为参数shape形式</span></div><div class="line">    img = tf.cast(img, tf.float32) * (1. / 255) - 0.5			<span class="comment">#归一化数据到[-0.5, 0.5]</span></div><div class="line">    label = tf.cast(features[<span class="string">'label'</span>], tf.int32)				<span class="comment">#将label从uint8转换为int32</span></div><div class="line">    <span class="built_in">return</span> img, label</div></pre></td></tr></table></figure>
+<p>TFRecordReader作用于文件名队列。它从队列中弹出文件名并使用该文件名，直到tfrecord为空时停止，此时它将从文件名队列中弹出下一个filename。<br>参数shape为一个列表形式，特殊的一点是列表中可以存在-1。-1代表的含义是不用我们自己指定这一维的大小，函数会自动计算，但列表中只能存在一个-1（当然如果存在多个-1，就是一个存在多解的方程了）。</p>
+<ul>
+<li>如果 shape=[-1], 表示要将tensor展开成一个list </li>
+<li>如果 shape=[a,b,c,…] 其中每个a,b,c,..均&gt;0，那么就是常规用法 </li>
+<li>如果 shape=[a,-1,c,…] 此时b=-1，a,c,..依然&gt;0。这表示tf会根据tensor的原尺寸，自动计算b的值。 </li>
+</ul>
+<h5 id="训练调用read-and-decode"><a href="#训练调用read-and-decode" class="headerlink" title="训练调用read_and_decode"></a>训练调用read_and_decode</h5><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># 此处各变量沿用上述定义</span></div><div class="line">img, label = read_and_decode(svPath)</div><div class="line"><span class="comment"># 使用shuffle_batch随机打乱输入</span></div><div class="line">img_batch, label_batch = tf.train.shuffle_batch([img, label],</div><div class="line">                                                batch_size=30, capacity=2000,</div><div class="line">                                                min_after_dequeue=1000)</div><div class="line">init = tf.initialize_all_variables()			<span class="comment">#初始化整个graph，如待读取的下一个记录tfrecord的位置，variables等</span></div><div class="line">with tf.Session() as sess:						<span class="comment">#创建Session</span></div><div class="line">    sess.run(init)</div><div class="line">    threads = tf.train.start_queue_runners(sess=sess)</div><div class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> range(3):</div><div class="line">        val, l= sess.run([img_batch, label_batch])</div><div class="line">        <span class="comment">#我们也可以根据需要对val， l进行处理</span></div><div class="line">        <span class="comment">#l = to_categorical(l, 12) </span></div><div class="line">        <span class="built_in">print</span>(val.shape, l)</div></pre></td></tr></table></figure>
+<p>关于队列的详解将会在下篇博客中给出。。。</p>
+<h5 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h5><p><a href="http://ycszen.github.io/2016/08/17/TensorFlow%E9%AB%98%E6%95%88%E8%AF%BB%E5%8F%96%E6%95%B0%E6%8D%AE/" target="_blank" rel="external">TensorFlow高效读取数据</a></p>
+
+      
+
+      
+        
+    </div>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-TensorFlow-tips笔记-1" class="article article-type-post" itemscope itemprop="blogPost">
   
   <div class="article-inner">

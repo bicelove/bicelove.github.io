@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>inception_v2性能对比 | bicelove</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="fine-tune on flowers datasets arguments in Tensorflow  –max_number_of_steps=100000 \  –batch_size=32 \  –learning_rate=0.01 \  –learning_rate_decay_type=fixed \  –save_interval_secs=60 \  –save_summar">
+<meta property="og:type" content="article">
+<meta property="og:title" content="inception_v2性能对比">
+<meta property="og:url" content="http://bicelove.com/2017/03/24/Tensorflow vs Caffe/index.html">
+<meta property="og:site_name" content="bicelove">
+<meta property="og:description" content="fine-tune on flowers datasets arguments in Tensorflow  –max_number_of_steps=100000 \  –batch_size=32 \  –learning_rate=0.01 \  –learning_rate_decay_type=fixed \  –save_interval_secs=60 \  –save_summar">
+<meta property="og:updated_time" content="2017-03-24T14:41:13.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="inception_v2性能对比">
+<meta name="twitter:description" content="fine-tune on flowers datasets arguments in Tensorflow  –max_number_of_steps=100000 \  –batch_size=32 \  –learning_rate=0.01 \  –learning_rate_decay_type=fixed \  –save_interval_secs=60 \  –save_summar">
+  
+    <link rel="alternative" href="/atom.xml" title="bicelove" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+</head>
+<body>
+  <div id="container">
+    <div id="wrap">
+      <div class="outer">
+        <section id="main"><article id="post-Tensorflow vs Caffe" class="article article-type-post" itemscope itemprop="blogPost">
+  
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      inception_v2性能对比
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-meta">
+      <a href="/2017/03/24/Tensorflow vs Caffe/" class="article-date">
+  <time datetime="2017-03-24T14:39:00.000Z" itemprop="datePublished">2017-03-24</time>
+</a>
+      
+    </div>
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h4 id="fine-tune-on-flowers-datasets-arguments-in-Tensorflow"><a href="#fine-tune-on-flowers-datasets-arguments-in-Tensorflow" class="headerlink" title="fine-tune on flowers datasets arguments in Tensorflow"></a>fine-tune on flowers datasets arguments in Tensorflow</h4><p>  –max_number_of_steps=100000 \<br>  –batch_size=32 \<br>  –learning_rate=0.01 \<br>  –learning_rate_decay_type=fixed \<br>  –save_interval_secs=60 \<br>  –save_summaries_secs=60 \<br>  –log_every_n_steps=100 \<br>  –optimizer=rmsprop \<br>  –weight_decay=0.00004</p>
+<p>测试结果：</p>
+<ul>
+<li>GPU memory：7829M</li>
+<li>speed： 0.09 sec/step    </li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># Fine-tune only the new layers for 91600 steps</span></div><div class="line">...</div><div class="line">INFO:tensorflow:global step 91000: loss = 0.3561 (0.09 sec/step)</div><div class="line">INFO:tensorflow:global step 91100: loss = 0.3328 (0.10 sec/step)</div><div class="line">INFO:tensorflow:global step 91200: loss = 0.5208 (0.10 sec/step)</div><div class="line">INFO:tensorflow:global step 91300: loss = 0.4623 (0.09 sec/step)</div><div class="line">INFO:tensorflow:global step 91400: loss = 0.9602 (0.10 sec/step)</div><div class="line">INFO:tensorflow:global step 91500: loss = 0.8571 (0.10 sec/step)</div><div class="line">INFO:tensorflow:global step 91600: loss = 0.6486 (0.10 sec/step)</div><div class="line">...</div></pre></td></tr></table></figure>
+<pre><code class="bash"><span class="comment"># evaluation</span>
+...
+I tensorflow/core/kernels/logging_ops.cc:79] <span class="built_in">eval</span>/Accuracy[0.8875]
+I tensorflow/core/kernels/logging_ops.cc:79] <span class="built_in">eval</span>/Recall_5[1]
+</code></pre>
+<h4 id="fine-tune-on-cloth-datasets-arguments-in-Caffe"><a href="#fine-tune-on-cloth-datasets-arguments-in-Caffe" class="headerlink" title="fine-tune on cloth datasets arguments in Caffe"></a>fine-tune on cloth datasets arguments in Caffe</h4><p>display: 100<br>average_loss: 40<br>base_lr: 0.01<br>lr_policy: “step”<br>stepsize: 200000<br>gamma: 0.1<br>max_iter:1000000<br>momentum: 0.9<br>weight_decay: 0.00004<br>snapshot: 1000</p>
+<p>测试结果：</p>
+<ul>
+<li>GPU memory：6047M</li>
+<li>speed：0.58 sec/step</li>
+</ul>
+<h5 id="尚未在tensorflow上调试通过-fine-tune-on-cloth-datasets-…"><a href="#尚未在tensorflow上调试通过-fine-tune-on-cloth-datasets-…" class="headerlink" title="尚未在tensorflow上调试通过 fine-tune on cloth datasets …"></a>尚未在tensorflow上调试通过 fine-tune on cloth datasets …</h5>
+      
+
+      
+        
+    </div>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2017/03/24/Tensorflow queue/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Tensorflow Queue
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2017/03/24/Tensorflow TFRecord/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Tensorflow Queue</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        <aside id="sidebar">
+  <nav class="menus">
+  	<ul>
+  		<li><a href="/"><i class="icon icon-home"></i></a></li>
+  		
+			<li><a href="/archives"><i class="icon icon-fenlei"></i></a></li>
+  		
+  		
+			<li><a href="/tags"><i class="icon icon-tag"></i></a></li>
+  		
+  		
+  			<li><a href="https://github.com/" target="_blank"><i class="icon icon-github"></i></a></li>
+  		
+  	</ul>
+  </nav>
+  <a id="go-top" href="#"><i class="icon icon-up"></i></a>
+</aside>
+      </div>
+      <footer id="footer">
+  
+	<div id="footer-info" class="inner">
+	  &copy; 2017 XiaoShuang He 
+	  - Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+	  - Theme <a href="https://github.com/hejianxian/hexo-theme-jane/" target="_blank">Jane</a>
+	</div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+    <a href="/tags" class="mobile-nav-link">Tag</a>
+  
+    <a href="https://github.com/" class="mobile-nav-link">Github</a>
+  
+</nav>
+    
+
+<script src="//cdn.bootcss.com/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>

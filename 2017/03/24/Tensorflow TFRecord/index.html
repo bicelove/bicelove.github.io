@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Tensorflow Queue | bicelove</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="TensorFlow有它自己的二进制格式，使用a mixture of its Records 格式和protobuf。Protobuf是一种序列化数据结构的方式，给出了关于数据的一些描述。TFRecords是tensorflow的默认数据格式，一个record就是一个包含了序列化tf.train.Example 协议缓存对象的二进制文件，可以使用python创建这种格式，然后便可以使用tenso">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Tensorflow Queue">
+<meta property="og:url" content="http://bicelove.com/2017/03/24/Tensorflow TFRecord/index.html">
+<meta property="og:site_name" content="bicelove">
+<meta property="og:description" content="TensorFlow有它自己的二进制格式，使用a mixture of its Records 格式和protobuf。Protobuf是一种序列化数据结构的方式，给出了关于数据的一些描述。TFRecords是tensorflow的默认数据格式，一个record就是一个包含了序列化tf.train.Example 协议缓存对象的二进制文件，可以使用python创建这种格式，然后便可以使用tenso">
+<meta property="og:updated_time" content="2017-03-24T14:40:39.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Tensorflow Queue">
+<meta name="twitter:description" content="TensorFlow有它自己的二进制格式，使用a mixture of its Records 格式和protobuf。Protobuf是一种序列化数据结构的方式，给出了关于数据的一些描述。TFRecords是tensorflow的默认数据格式，一个record就是一个包含了序列化tf.train.Example 协议缓存对象的二进制文件，可以使用python创建这种格式，然后便可以使用tenso">
+  
+    <link rel="alternative" href="/atom.xml" title="bicelove" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+</head>
+<body>
+  <div id="container">
+    <div id="wrap">
+      <div class="outer">
+        <section id="main"><article id="post-Tensorflow TFRecord" class="article article-type-post" itemscope itemprop="blogPost">
+  
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Tensorflow Queue
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-meta">
+      <a href="/2017/03/24/Tensorflow TFRecord/" class="article-date">
+  <time datetime="2017-03-24T14:38:22.000Z" itemprop="datePublished">2017-03-24</time>
+</a>
+      
+    </div>
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>TensorFlow有它自己的二进制格式，使用a mixture of its Records 格式和protobuf。<br>Protobuf是一种序列化数据结构的方式，给出了关于数据的一些描述。<br>TFRecords是tensorflow的默认数据格式，一个record就是一个包含了序列化tf.train.Example 协议缓存对象的二进制文件，可以使用python创建这种格式，然后便可以使用tensorflow提供的函数来输入给机器学习模型。</p>
+<h3 id="Tensorflow支持多种样例输入的方式"><a href="#Tensorflow支持多种样例输入的方式" class="headerlink" title="Tensorflow支持多种样例输入的方式"></a>Tensorflow支持多种样例输入的方式</h3><ul>
+<li>placeholder：较易使用，但这需要手动传递numpy.array类型的数据。</li>
+<li>队列机制：使用二进制文件和输入队列的组合形式进行异步计算。<br>这种方式不仅可以节省代码量，避免data augmentation和读文件操作，处理不同类型的数据， 而且也不再需要人为地划分开“预处理”和“模型计算”。</li>
+</ul>
+<h4 id="生成TFRecord"><a href="#生成TFRecord" class="headerlink" title="生成TFRecord"></a>生成TFRecord</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div></pre></td><td class="code"><pre><div class="line">import os</div><div class="line">import tensorflow as tf </div><div class="line">from PIL import Image</div><div class="line">import sys</div><div class="line"></div><div class="line"><span class="comment"># 参数1：各分类图片所在目录</span></div><div class="line">imgPath = sys.argv[1]				</div><div class="line">classes = os.listdir(imgPath)					<span class="comment">#各分类图片所在目录存储在classes</span></div><div class="line"><span class="comment"># </span></div><div class="line">init_op = tf.global_variables_initializer()</div><div class="line">sess = tf.Session()</div><div class="line">sess.run(init_op)</div><div class="line"><span class="comment"># 参数2：保存TFRecord文件目录</span></div><div class="line">svPath = sys.argv[2]				</div><div class="line">writer = tf.python_io.TFRecordWriter(svPath)	<span class="comment">#tf.python_io.TFRecordWriter进行写入</span></div><div class="line"><span class="comment"># enumerate既遍历索引又遍历元素，index存储索引，下面会记录为图片的label， name存储元素</span></div><div class="line"><span class="keyword">for</span> index, name <span class="keyword">in</span> enumerate(classes):		</div><div class="line">    class_path = imgPath + name + <span class="string">"/"</span></div><div class="line">    <span class="comment"># os.listdir()函数获得指定目录中的内容， img_name列举每张图片名称</span></div><div class="line">    <span class="keyword">for</span> img_name <span class="keyword">in</span> os.listdir(class_path):	</div><div class="line">	    img_path = class_path + img_name		<span class="comment">#img_path存储每张图片的“绝对”路径</span></div><div class="line">        img = Image.open(img_path)</div><div class="line">        img = img.resize((224, 224))</div><div class="line">		<span class="comment">#img.save("tempResize.jpg")				#存储图片进行检验</span></div><div class="line">	    img_raw = img.tobytes()          		<span class="comment">#将图片转化为原生bytes</span></div><div class="line">		<span class="comment">#使用tf.train.Example来定义填入的数据格式</span></div><div class="line">        example = tf.train.Example(features=tf.train.Features(feature=&#123;</div><div class="line">            <span class="string">"label"</span>: tf.train.Feature(int64_list=tf.train.Int64List(value=[index])),</div><div class="line">            <span class="string">'img_raw'</span>: tf.train.Feature(bytes_list=tf.train.BytesList(value=[img_raw]))</div><div class="line">       &#125;))</div><div class="line">        writer.write(example.SerializeToString())  <span class="comment">#序列化为字符串</span></div><div class="line">writer.close()</div></pre></td></tr></table></figure>
+<p>一个Example中包含Features，Features里包含Feature（没有s）的字典，Feature里包含有一个 FloatList， 或者ByteList，或者Int64List。</p>
+<h4 id="读取TFRecord"><a href="#读取TFRecord" class="headerlink" title="读取TFRecord"></a>读取TFRecord</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># 此处各变量沿用上述定义</span></div><div class="line"><span class="keyword">for</span> serialized_example <span class="keyword">in</span> tf.python_io.tf_record_iterator(svPath):</div><div class="line">    example = tf.train.Example()</div><div class="line">    example.ParseFromString(serialized_example)		<span class="comment">#解析字符串</span></div><div class="line">	image = example.features.feature[<span class="string">'image'</span>].bytes_list.value</div><div class="line">    label = example.features.feature[<span class="string">'label'</span>].int64_list.value</div><div class="line">    <span class="comment"># </span></div><div class="line">    <span class="built_in">print</span> image, label</div></pre></td></tr></table></figure>
+<h4 id="使用队列（queue）读取TFRecord"><a href="#使用队列（queue）读取TFRecord" class="headerlink" title="使用队列（queue）读取TFRecord"></a>使用队列（queue）读取TFRecord</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line">def read_and_decode(filename):</div><div class="line">    <span class="comment">#根据文件名生成一个队列,即将filenames（即为上述生成的tfrecord文件）转为queue</span></div><div class="line">    filename_queue = tf.train.string_input_producer([filename])		</div><div class="line">    reader = tf.TFRecordReader()</div><div class="line">    _, serialized_example = reader.read(filename_queue)</div><div class="line">    <span class="comment"># parse_single_example解释器从TFRecords文件中读取数据，将Example协议内存块(protocol buffer)解析为张量。</span></div><div class="line">    features = tf.parse_single_example(serialized_example,</div><div class="line">                                       features=&#123;</div><div class="line">                                           <span class="string">'label'</span>: tf.FixedLenFeature([], tf.int64),</div><div class="line">                                           <span class="string">'img_raw'</span> : tf.FixedLenFeature([], tf.string),</div><div class="line">                                       &#125;)</div><div class="line">    img = tf.decode_raw(features[<span class="string">'img_raw'</span>], tf.uint8)			<span class="comment">#解析img_raw，并将其转换为uint8向量</span></div><div class="line">	img = tf.reshape(img, [224, 224, 3])						<span class="comment">#reshape，将tensor转为参数shape形式</span></div><div class="line">    img = tf.cast(img, tf.float32) * (1. / 255) - 0.5			<span class="comment">#归一化数据到[-0.5, 0.5]</span></div><div class="line">    label = tf.cast(features[<span class="string">'label'</span>], tf.int32)				<span class="comment">#将label从uint8转换为int32</span></div><div class="line">    <span class="built_in">return</span> img, label</div></pre></td></tr></table></figure>
+<p>TFRecordReader作用于文件名队列。它从队列中弹出文件名并使用该文件名，直到tfrecord为空时停止，此时它将从文件名队列中弹出下一个filename。<br>参数shape为一个列表形式，特殊的一点是列表中可以存在-1。-1代表的含义是不用我们自己指定这一维的大小，函数会自动计算，但列表中只能存在一个-1（当然如果存在多个-1，就是一个存在多解的方程了）。</p>
+<ul>
+<li>如果 shape=[-1], 表示要将tensor展开成一个list </li>
+<li>如果 shape=[a,b,c,…] 其中每个a,b,c,..均&gt;0，那么就是常规用法 </li>
+<li>如果 shape=[a,-1,c,…] 此时b=-1，a,c,..依然&gt;0。这表示tf会根据tensor的原尺寸，自动计算b的值。 </li>
+</ul>
+<h5 id="训练调用read-and-decode"><a href="#训练调用read-and-decode" class="headerlink" title="训练调用read_and_decode"></a>训练调用read_and_decode</h5><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># 此处各变量沿用上述定义</span></div><div class="line">img, label = read_and_decode(svPath)</div><div class="line"><span class="comment"># 使用shuffle_batch随机打乱输入</span></div><div class="line">img_batch, label_batch = tf.train.shuffle_batch([img, label],</div><div class="line">                                                batch_size=30, capacity=2000,</div><div class="line">                                                min_after_dequeue=1000)</div><div class="line">init = tf.initialize_all_variables()			<span class="comment">#初始化整个graph，如待读取的下一个记录tfrecord的位置，variables等</span></div><div class="line">with tf.Session() as sess:						<span class="comment">#创建Session</span></div><div class="line">    sess.run(init)</div><div class="line">    threads = tf.train.start_queue_runners(sess=sess)</div><div class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> range(3):</div><div class="line">        val, l= sess.run([img_batch, label_batch])</div><div class="line">        <span class="comment">#我们也可以根据需要对val， l进行处理</span></div><div class="line">        <span class="comment">#l = to_categorical(l, 12) </span></div><div class="line">        <span class="built_in">print</span>(val.shape, l)</div></pre></td></tr></table></figure>
+<p>关于队列的详解将会在下篇博客中给出。。。</p>
+<h5 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h5><p><a href="http://ycszen.github.io/2016/08/17/TensorFlow%E9%AB%98%E6%95%88%E8%AF%BB%E5%8F%96%E6%95%B0%E6%8D%AE/" target="_blank" rel="external">TensorFlow高效读取数据</a></p>
+
+      
+
+      
+        
+    </div>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2017/03/24/Tensorflow vs Caffe/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          inception_v2性能对比
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2017/03/23/TensorFlow-tips笔记-1/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">TensorFlow tips笔记-1</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        <aside id="sidebar">
+  <nav class="menus">
+  	<ul>
+  		<li><a href="/"><i class="icon icon-home"></i></a></li>
+  		
+			<li><a href="/archives"><i class="icon icon-fenlei"></i></a></li>
+  		
+  		
+			<li><a href="/tags"><i class="icon icon-tag"></i></a></li>
+  		
+  		
+  			<li><a href="https://github.com/" target="_blank"><i class="icon icon-github"></i></a></li>
+  		
+  	</ul>
+  </nav>
+  <a id="go-top" href="#"><i class="icon icon-up"></i></a>
+</aside>
+      </div>
+      <footer id="footer">
+  
+	<div id="footer-info" class="inner">
+	  &copy; 2017 XiaoShuang He 
+	  - Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+	  - Theme <a href="https://github.com/hejianxian/hexo-theme-jane/" target="_blank">Jane</a>
+	</div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+    <a href="/tags" class="mobile-nav-link">Tag</a>
+  
+    <a href="https://github.com/" class="mobile-nav-link">Github</a>
+  
+</nav>
+    
+
+<script src="//cdn.bootcss.com/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>
